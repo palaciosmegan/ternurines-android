@@ -2,7 +2,6 @@ package com.example.testapp.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -12,7 +11,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.testapp.ui.components.EmptyState
+import com.example.testapp.ui.screens.cart.CartRoute
 import com.example.testapp.ui.screens.catalog.CatalogRoute
+import com.example.testapp.ui.screens.checkout.CheckoutRoute
+import com.example.testapp.ui.screens.checkout.OrderConfirmedScreen
 import com.example.testapp.ui.screens.detail.ProductDetailRoute
 import com.example.testapp.ui.screens.login.LoginRoute
 import com.example.testapp.ui.screens.profile.ProfileRoute
@@ -40,7 +42,29 @@ fun AppNavHost(
             ProductDetailRoute(onBack = { navController.popBackStack() })
         }
         composable(Routes.CART) {
-            EmptyState(icon = Icons.Outlined.ShoppingCart, title = "Carrito")
+            CartRoute(
+                onContinueShopping = { navController.navigateToTab(Routes.HOME) },
+                onCheckout = { navController.navigate(Routes.CHECKOUT) }
+            )
+        }
+        composable(Routes.CHECKOUT) {
+            CheckoutRoute(
+                onBack = { navController.popBackStack() },
+                onOrderPlaced = { id ->
+                    navController.navigate(Routes.orderConfirmed(id)) {
+                        popUpTo(Routes.CHECKOUT) { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable(
+            route = Routes.ORDER_CONFIRMED,
+            arguments = listOf(navArgument(Routes.ORDER_ID) { type = NavType.IntType })
+        ) { entry ->
+            OrderConfirmedScreen(
+                orderId = entry.arguments?.getInt(Routes.ORDER_ID) ?: 0,
+                onBackToCatalog = { navController.navigateToTab(Routes.HOME) }
+            )
         }
         composable(Routes.FAVORITES) {
             EmptyState(icon = Icons.Outlined.FavoriteBorder, title = "Mis favs")

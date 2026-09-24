@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cake
 import androidx.compose.material.icons.outlined.SearchOff
+import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,10 +33,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.testapp.data.model.Product
+import com.example.testapp.ui.components.AppButton
 import com.example.testapp.ui.components.AppTopBar
 import com.example.testapp.ui.components.EmptyState
 import com.example.testapp.ui.components.ProductBadge
 import com.example.testapp.ui.components.ProductImage
+import com.example.testapp.ui.components.QuantityStepper
+import com.example.testapp.ui.components.rememberShowMessage
 import com.example.testapp.ui.theme.TestAppTheme
 import com.example.testapp.util.formatPrice
 
@@ -45,13 +49,23 @@ fun ProductDetailRoute(
     viewModel: ProductDetailViewModel = hiltViewModel()
 ) {
     val product by viewModel.product.collectAsStateWithLifecycle()
+    val showMessage = rememberShowMessage()
 
-    ProductDetailScreen(product = product, onBack = onBack)
+    ProductDetailScreen(
+        product = product,
+        quantity = viewModel.quantity,
+        onQuantityChange = viewModel::onQuantityChange,
+        onAddToCart = { showMessage(viewModel.addToCart()) },
+        onBack = onBack
+    )
 }
 
 @Composable
 fun ProductDetailScreen(
     product: Product?,
+    quantity: Int,
+    onQuantityChange: (Int) -> Unit,
+    onAddToCart: () -> Unit,
     onBack: () -> Unit
 ) {
     Column(Modifier.fillMaxSize()) {
@@ -60,13 +74,18 @@ fun ProductDetailScreen(
         if (product == null) {
             EmptyState(icon = Icons.Outlined.SearchOff, title = "No se encontró este producto.")
         } else {
-            ProductDetailContent(product)
+            ProductDetailContent(product, quantity, onQuantityChange, onAddToCart)
         }
     }
 }
 
 @Composable
-private fun ProductDetailContent(product: Product) {
+private fun ProductDetailContent(
+    product: Product,
+    quantity: Int,
+    onQuantityChange: (Int) -> Unit,
+    onAddToCart: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -123,6 +142,25 @@ private fun ProductDetailContent(product: Product) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+
+        if (!product.isOutOfStock) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                QuantityStepper(
+                    quantity = quantity,
+                    onQuantityChange = onQuantityChange,
+                    max = product.stock
+                )
+                AppButton(
+                    text = "Agregar al carrito",
+                    onClick = onAddToCart,
+                    icon = Icons.Outlined.ShoppingCart,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
     }
 }
 
@@ -154,6 +192,9 @@ private fun ProductDetailPreview() {
                 pieces = 4,
                 featured = true
             ),
+            quantity = 1,
+            onQuantityChange = {},
+            onAddToCart = {},
             onBack = {}
         )
     }

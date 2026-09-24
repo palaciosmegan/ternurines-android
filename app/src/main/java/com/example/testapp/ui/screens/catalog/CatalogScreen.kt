@@ -25,11 +25,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.testapp.data.model.Product
+import com.example.testapp.ui.components.AddToCartButton
 import com.example.testapp.ui.components.CategoryChips
 import com.example.testapp.ui.components.EmptyState
 import com.example.testapp.ui.components.ProductCard
 import com.example.testapp.ui.components.SearchBar
 import com.example.testapp.ui.components.SectionHeader
+import com.example.testapp.ui.components.rememberShowMessage
 import com.example.testapp.ui.theme.TestAppTheme
 
 @Composable
@@ -38,6 +41,7 @@ fun CatalogRoute(
     viewModel: CatalogViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val showMessage = rememberShowMessage()
 
     CatalogScreen(
         state = state,
@@ -45,7 +49,8 @@ fun CatalogRoute(
         onFilterSelected = viewModel::onFilterSelected,
         onClearFilters = viewModel::clearFilters,
         onToggleLargeView = viewModel::toggleLargeView,
-        onProductClick = onProductClick
+        onProductClick = onProductClick,
+        onAddToCart = { showMessage(viewModel.addToCart(it)) }
     )
 }
 
@@ -56,7 +61,8 @@ fun CatalogScreen(
     onFilterSelected: (String) -> Unit,
     onClearFilters: () -> Unit,
     onToggleLargeView: () -> Unit,
-    onProductClick: (String) -> Unit
+    onProductClick: (String) -> Unit,
+    onAddToCart: (Product) -> Unit
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(if (state.largeView) 1 else 2),
@@ -112,7 +118,14 @@ fun CatalogScreen(
                 ProductCard(
                     product = product,
                     onClick = { onProductClick(product.id) },
-                    largeView = state.largeView
+                    largeView = state.largeView,
+                    priceActions = {
+                        AddToCartButton(
+                            productName = product.name,
+                            onClick = { onAddToCart(product) },
+                            enabled = !product.isOutOfStock
+                        )
+                    }
                 )
             }
         }
@@ -136,7 +149,8 @@ private fun CatalogEmptyPreview() {
             onFilterSelected = {},
             onClearFilters = {},
             onToggleLargeView = {},
-            onProductClick = {}
+            onProductClick = {},
+            onAddToCart = {}
         )
     }
 }

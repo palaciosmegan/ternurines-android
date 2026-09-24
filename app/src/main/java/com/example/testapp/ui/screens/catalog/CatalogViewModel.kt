@@ -3,6 +3,7 @@ package com.example.testapp.ui.screens.catalog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.testapp.data.AccessibilityRepository
+import com.example.testapp.data.CartRepository
 import com.example.testapp.data.CatalogRepository
 import com.example.testapp.data.model.Product
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,7 +27,8 @@ data class CatalogUiState(
 @HiltViewModel
 class CatalogViewModel @Inject constructor(
     catalogRepository: CatalogRepository,
-    private val accessibilityRepository: AccessibilityRepository
+    private val accessibilityRepository: AccessibilityRepository,
+    private val cartRepository: CartRepository
 ) : ViewModel() {
 
     private val query = MutableStateFlow("")
@@ -59,6 +61,10 @@ class CatalogViewModel @Inject constructor(
         query.value = ""
         selectedFilter.value = ALL
     }
+
+    fun addToCart(product: Product): String =
+        if (cartRepository.add(product)) "${product.name} agregado al carrito"
+        else "No hay más stock disponible de ${product.name}."
 
     fun toggleLargeView() {
         accessibilityRepository.setLargeView(!uiState.value.largeView)
