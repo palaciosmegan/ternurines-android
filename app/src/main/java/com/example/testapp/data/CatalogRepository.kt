@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,6 +23,12 @@ class CatalogRepository @Inject constructor(
     val products: StateFlow<List<Product>> = _products.asStateFlow()
 
     fun product(id: String): Flow<Product?> = products.map { list -> list.find { it.id == id } }
+
+    fun decreaseStock(productId: String, quantity: Int) {
+        _products.update { list ->
+            list.map { if (it.id == productId) it.copy(stock = (it.stock - quantity).coerceAtLeast(0)) else it }
+        }
+    }
 
     private fun loadProducts(): List<Product> {
         val json = context.assets.open(CATALOG_FILE).bufferedReader().use { it.readText() }
