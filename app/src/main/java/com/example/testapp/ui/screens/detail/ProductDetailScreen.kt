@@ -36,6 +36,7 @@ import com.example.testapp.data.model.Product
 import com.example.testapp.ui.components.AppButton
 import com.example.testapp.ui.components.AppTopBar
 import com.example.testapp.ui.components.EmptyState
+import com.example.testapp.ui.components.FavoriteButton
 import com.example.testapp.ui.components.ProductBadge
 import com.example.testapp.ui.components.ProductImage
 import com.example.testapp.ui.components.QuantityStepper
@@ -49,10 +50,13 @@ fun ProductDetailRoute(
     viewModel: ProductDetailViewModel = hiltViewModel()
 ) {
     val product by viewModel.product.collectAsStateWithLifecycle()
+    val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
     val showMessage = rememberShowMessage()
 
     ProductDetailScreen(
         product = product,
+        isFavorite = isFavorite,
+        onToggleFavorite = viewModel::toggleFavorite,
         quantity = viewModel.quantity,
         onQuantityChange = viewModel::onQuantityChange,
         onAddToCart = { showMessage(viewModel.addToCart()) },
@@ -63,6 +67,8 @@ fun ProductDetailRoute(
 @Composable
 fun ProductDetailScreen(
     product: Product?,
+    isFavorite: Boolean,
+    onToggleFavorite: () -> Unit,
     quantity: Int,
     onQuantityChange: (Int) -> Unit,
     onAddToCart: () -> Unit,
@@ -74,7 +80,7 @@ fun ProductDetailScreen(
         if (product == null) {
             EmptyState(icon = Icons.Outlined.SearchOff, title = "No se encontró este producto.")
         } else {
-            ProductDetailContent(product, quantity, onQuantityChange, onAddToCart)
+            ProductDetailContent(product, isFavorite, onToggleFavorite, quantity, onQuantityChange, onAddToCart)
         }
     }
 }
@@ -82,6 +88,8 @@ fun ProductDetailScreen(
 @Composable
 private fun ProductDetailContent(
     product: Product,
+    isFavorite: Boolean,
+    onToggleFavorite: () -> Unit,
     quantity: Int,
     onQuantityChange: (Int) -> Unit,
     onAddToCart: () -> Unit
@@ -107,6 +115,13 @@ private fun ProductDetailContent(
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(12.dp)
+            )
+            FavoriteButton(
+                isFavorite = isFavorite,
+                onToggle = onToggleFavorite,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
             )
         }
 
@@ -192,6 +207,8 @@ private fun ProductDetailPreview() {
                 pieces = 4,
                 featured = true
             ),
+            isFavorite = true,
+            onToggleFavorite = {},
             quantity = 1,
             onQuantityChange = {},
             onAddToCart = {},

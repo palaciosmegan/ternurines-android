@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.testapp.data.AccessibilityRepository
 import com.example.testapp.data.CartRepository
 import com.example.testapp.data.CatalogRepository
+import com.example.testapp.data.FavoritesRepository
 import com.example.testapp.data.model.Product
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +20,8 @@ data class CatalogUiState(
     val filters: List<String> = emptyList(),
     val selectedFilter: String = CatalogViewModel.ALL,
     val query: String = "",
-    val largeView: Boolean = false
+    val largeView: Boolean = false,
+    val favoriteIds: Set<String> = emptySet()
 ) {
     val hasActiveFilters: Boolean get() = query.isNotBlank() || selectedFilter != CatalogViewModel.ALL
 }
@@ -28,7 +30,8 @@ data class CatalogUiState(
 class CatalogViewModel @Inject constructor(
     catalogRepository: CatalogRepository,
     private val accessibilityRepository: AccessibilityRepository,
-    private val cartRepository: CartRepository
+    private val cartRepository: CartRepository,
+    private val favoritesRepository: FavoritesRepository
 ) : ViewModel() {
 
     private val query = MutableStateFlow("")
@@ -38,14 +41,16 @@ class CatalogViewModel @Inject constructor(
         catalogRepository.products,
         query,
         selectedFilter,
-        accessibilityRepository.settings
-    ) { products, query, filter, settings ->
+        accessibilityRepository.settings,
+        favoritesRepository.favoriteIds
+    ) { products, query, filter, settings, favoriteIds ->
         CatalogUiState(
             products = products.filter { it.matchesFilter(filter) && it.matchesQuery(query) },
             filters = listOf(ALL, FEATURED) + products.map { it.category }.distinct(),
             selectedFilter = filter,
             query = query,
-            largeView = settings.largeView
+            largeView = settings.largeView,
+            favoriteIds = favoriteIds
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CatalogUiState())
 
@@ -65,6 +70,8 @@ class CatalogViewModel @Inject constructor(
     fun addToCart(product: Product): String =
         if (cartRepository.add(product)) "${product.name} agregado al carrito"
         else "No hay más stock disponible de ${product.name}."
+
+    fun toggleFavorite(productId: String) = favoritesRepository.toggle(productId)
 
     fun toggleLargeView() {
         accessibilityRepository.setLargeView(!uiState.value.largeView)

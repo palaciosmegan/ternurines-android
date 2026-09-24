@@ -1,7 +1,5 @@
 package com.example.testapp.navigation
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -10,12 +8,12 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.testapp.ui.components.EmptyState
 import com.example.testapp.ui.screens.cart.CartRoute
 import com.example.testapp.ui.screens.catalog.CatalogRoute
 import com.example.testapp.ui.screens.checkout.CheckoutRoute
 import com.example.testapp.ui.screens.checkout.OrderConfirmedScreen
 import com.example.testapp.ui.screens.detail.ProductDetailRoute
+import com.example.testapp.ui.screens.favorites.FavoritesRoute
 import com.example.testapp.ui.screens.login.LoginRoute
 import com.example.testapp.ui.screens.profile.ProfileRoute
 import com.example.testapp.ui.screens.register.RegisterRoute
@@ -67,7 +65,11 @@ fun AppNavHost(
             )
         }
         composable(Routes.FAVORITES) {
-            EmptyState(icon = Icons.Outlined.FavoriteBorder, title = "Mis favs")
+            FavoritesRoute(
+                onProductClick = { id -> navController.navigate(Routes.productDetail(id)) },
+                onExploreCatalog = { navController.navigateToTab(Routes.HOME) },
+                onLoginClick = { navController.navigate(Routes.LOGIN) }
+            )
         }
         composable(Routes.PROFILE) {
             ProfileRoute(

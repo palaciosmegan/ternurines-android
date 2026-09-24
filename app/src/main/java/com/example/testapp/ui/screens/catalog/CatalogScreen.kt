@@ -26,10 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.testapp.data.model.Product
-import com.example.testapp.ui.components.AddToCartButton
+import com.example.testapp.ui.components.CatalogProductCard
 import com.example.testapp.ui.components.CategoryChips
 import com.example.testapp.ui.components.EmptyState
-import com.example.testapp.ui.components.ProductCard
 import com.example.testapp.ui.components.SearchBar
 import com.example.testapp.ui.components.SectionHeader
 import com.example.testapp.ui.components.rememberShowMessage
@@ -50,7 +49,8 @@ fun CatalogRoute(
         onClearFilters = viewModel::clearFilters,
         onToggleLargeView = viewModel::toggleLargeView,
         onProductClick = onProductClick,
-        onAddToCart = { showMessage(viewModel.addToCart(it)) }
+        onAddToCart = { showMessage(viewModel.addToCart(it)) },
+        onToggleFavorite = viewModel::toggleFavorite
     )
 }
 
@@ -62,7 +62,8 @@ fun CatalogScreen(
     onClearFilters: () -> Unit,
     onToggleLargeView: () -> Unit,
     onProductClick: (String) -> Unit,
-    onAddToCart: (Product) -> Unit
+    onAddToCart: (Product) -> Unit,
+    onToggleFavorite: (String) -> Unit
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(if (state.largeView) 1 else 2),
@@ -115,17 +116,13 @@ fun CatalogScreen(
             }
         } else {
             items(state.products, key = { it.id }) { product ->
-                ProductCard(
+                CatalogProductCard(
                     product = product,
+                    isFavorite = product.id in state.favoriteIds,
                     onClick = { onProductClick(product.id) },
-                    largeView = state.largeView,
-                    priceActions = {
-                        AddToCartButton(
-                            productName = product.name,
-                            onClick = { onAddToCart(product) },
-                            enabled = !product.isOutOfStock
-                        )
-                    }
+                    onToggleFavorite = { onToggleFavorite(product.id) },
+                    onAddToCart = { onAddToCart(product) },
+                    largeView = state.largeView
                 )
             }
         }
@@ -150,7 +147,8 @@ private fun CatalogEmptyPreview() {
             onClearFilters = {},
             onToggleLargeView = {},
             onProductClick = {},
-            onAddToCart = {}
+            onAddToCart = {},
+            onToggleFavorite = {}
         )
     }
 }
