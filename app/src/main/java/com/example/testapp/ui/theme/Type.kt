@@ -10,7 +10,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.testapp.R
 
-// Quicksand is a variable font (wght 300..700); each weight picks its instance from the same file
 @OptIn(ExperimentalTextApi::class)
 private fun quicksand(weight: FontWeight) = Font(
     resId = R.font.quicksand,
@@ -28,7 +27,6 @@ val Quicksand = FontFamily(
 
 private val BaseTypography = Typography()
 
-// Material typography styles, all using Quicksand
 val Typography = Typography(
     displayLarge = BaseTypography.displayLarge.copy(fontFamily = Quicksand),
     displayMedium = BaseTypography.displayMedium.copy(fontFamily = Quicksand),

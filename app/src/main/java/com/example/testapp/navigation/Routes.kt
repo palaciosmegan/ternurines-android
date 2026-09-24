@@ -7,4 +7,9 @@ object Routes {
     const val PROFILE = "profile"
     const val LOGIN = "login"
     const val REGISTER = "register"
+
+    const val PRODUCT_ID = "productId"
+    const val PRODUCT_DETAIL = "product/{$PRODUCT_ID}"
+
+    fun productDetail(id: String) = "product/$id"
 }

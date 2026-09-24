@@ -1,19 +1,15 @@
 package com.example.testapp.ui.theme
 
-import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 
-// Primary = Coral, secondary = Green, tertiary = Pink, surfaces = Neutral.
-// Error colors keep Material's defaults since the palette has no dedicated red.
 private val DarkColorScheme = darkColorScheme(
     primary = Coral30,
     onPrimary = Coral90,
@@ -84,26 +80,68 @@ private val LightColorScheme = lightColorScheme(
     surfaceContainerHighest = Neutral20
 )
 
+private val HighContrastLightColorScheme = LightColorScheme.copy(
+    primary = Coral90,
+    secondary = Green90,
+    tertiary = Pink90,
+    background = Color.White,
+    onBackground = Color.Black,
+    surface = Color.White,
+    onSurface = Color.Black,
+    surfaceVariant = Neutral10,
+    onSurfaceVariant = Neutral100,
+    outline = Neutral100,
+    outlineVariant = Neutral80,
+    surfaceContainerLowest = Color.White,
+    surfaceContainerLow = Color.White,
+    surfaceContainer = Color.White,
+    surfaceContainerHigh = Neutral10,
+    surfaceContainerHighest = Neutral10
+)
+
+private val HighContrastDarkColorScheme = DarkColorScheme.copy(
+    primary = Coral20,
+    secondary = Green20,
+    tertiary = Pink20,
+    background = Color.Black,
+    onBackground = Color.White,
+    surface = Color.Black,
+    onSurface = Color.White,
+    surfaceVariant = Neutral100,
+    onSurfaceVariant = Neutral10,
+    outline = Neutral10,
+    outlineVariant = Neutral30,
+    surfaceContainerLowest = Color.Black,
+    surfaceContainerLow = Color.Black,
+    surfaceContainer = Color.Black,
+    surfaceContainerHigh = Neutral100,
+    surfaceContainerHighest = Neutral100
+)
+
+private const val LARGE_TEXT_SCALE = 1.25f
+
 @Composable
 fun TestAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false,
+    highContrast: Boolean = false,
+    largeText: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
+        highContrast && darkTheme -> HighContrastDarkColorScheme
+        highContrast -> HighContrastLightColorScheme
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    val density = LocalDensity.current
+    val fontScale = if (largeText) density.fontScale * LARGE_TEXT_SCALE else density.fontScale
+
+    CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale)) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

@@ -2,15 +2,18 @@ package com.example.testapp.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.testapp.ui.components.EmptyState
+import com.example.testapp.ui.screens.catalog.CatalogRoute
+import com.example.testapp.ui.screens.detail.ProductDetailRoute
 import com.example.testapp.ui.screens.login.LoginRoute
 import com.example.testapp.ui.screens.profile.ProfileRoute
 import com.example.testapp.ui.screens.register.RegisterRoute
@@ -26,7 +29,15 @@ fun AppNavHost(
         modifier = modifier
     ) {
         composable(Routes.HOME) {
-            EmptyState(icon = Icons.Outlined.Home, title = "Catálogo")
+            CatalogRoute(
+                onProductClick = { id -> navController.navigate(Routes.productDetail(id)) }
+            )
+        }
+        composable(
+            route = Routes.PRODUCT_DETAIL,
+            arguments = listOf(navArgument(Routes.PRODUCT_ID) { type = NavType.StringType })
+        ) {
+            ProductDetailRoute(onBack = { navController.popBackStack() })
         }
         composable(Routes.CART) {
             EmptyState(icon = Icons.Outlined.ShoppingCart, title = "Carrito")
