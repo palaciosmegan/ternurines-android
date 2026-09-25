@@ -15,8 +15,8 @@ data class Product(
     val featured: Boolean = false
 ) {
     val isOutOfStock: Boolean get() = stock <= 0
-    val isLowStock: Boolean get() = stock in 1 until LOW_STOCK_THRESHOLD
     val isFewLeft: Boolean get() = stock in 1..FEW_LEFT_THRESHOLD
+    val needsRestock: Boolean get() = stock < LOW_STOCK_THRESHOLD
 
     companion object {
         const val LOW_STOCK_THRESHOLD = 10

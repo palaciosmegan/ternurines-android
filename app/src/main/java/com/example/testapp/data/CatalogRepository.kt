@@ -24,6 +24,16 @@ class CatalogRepository @Inject constructor(
 
     fun product(id: String): Flow<Product?> = products.map { list -> list.find { it.id == id } }
 
+    val lowStockProducts: Flow<List<Product>> = products.map { list ->
+        list.filter { it.needsRestock }
+    }
+
+    fun updateStock(productId: String, stock: Int) {
+        _products.update { list ->
+            list.map { if (it.id == productId) it.copy(stock = stock) else it }
+        }
+    }
+
     fun decreaseStock(productId: String, quantity: Int) {
         _products.update { list ->
             list.map { if (it.id == productId) it.copy(stock = (it.stock - quantity).coerceAtLeast(0)) else it }

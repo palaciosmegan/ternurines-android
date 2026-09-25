@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
+import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -35,16 +36,20 @@ import com.example.testapp.ui.theme.TestAppTheme
 fun ProfileRoute(
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit,
+    onInventoryClick: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val user by viewModel.currentUser.collectAsStateWithLifecycle()
     val accessibility by viewModel.accessibility.collectAsStateWithLifecycle()
+    val lowStockCount by viewModel.lowStockCount.collectAsStateWithLifecycle()
 
     ProfileScreen(
         user = user,
         accessibility = accessibility,
+        lowStockCount = lowStockCount,
         onLoginClick = onLoginClick,
         onRegisterClick = onRegisterClick,
+        onInventoryClick = onInventoryClick,
         onLogout = viewModel::logout,
         onLargeViewChange = viewModel::setLargeView,
         onHighContrastChange = viewModel::setHighContrast
@@ -55,8 +60,10 @@ fun ProfileRoute(
 fun ProfileScreen(
     user: User?,
     accessibility: AccessibilitySettings,
+    lowStockCount: Int,
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit,
+    onInventoryClick: () -> Unit,
     onLogout: () -> Unit,
     onLargeViewChange: (Boolean) -> Unit,
     onHighContrastChange: (Boolean) -> Unit
@@ -72,6 +79,9 @@ fun ProfileScreen(
             GuestSection(onLoginClick, onRegisterClick)
         } else {
             UserSection(user, onLogout)
+            if (user.isAdmin) {
+                AdminSection(lowStockCount, onInventoryClick)
+            }
         }
         AccessibilitySection(accessibility, onLargeViewChange, onHighContrastChange)
     }
@@ -126,6 +136,36 @@ private fun UserSection(user: User, onLogout: () -> Unit) {
 }
 
 @Composable
+private fun AdminSection(lowStockCount: Int, onInventoryClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text("Administración", style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = if (lowStockCount > 0) "$lowStockCount productos con stock bajo."
+                else "Todo el stock está en buen nivel.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (lowStockCount > 0) MaterialTheme.colorScheme.error
+                else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            AppButton(
+                text = "Ver inventario",
+                onClick = onInventoryClick,
+                style = AppButtonStyle.Secondary,
+                icon = Icons.Outlined.Inventory2,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Composable
 private fun AccessibilitySection(
     settings: AccessibilitySettings,
     onLargeViewChange: (Boolean) -> Unit,
@@ -161,8 +201,10 @@ private fun ProfileGuestPreview() {
         ProfileScreen(
             user = null,
             accessibility = AccessibilitySettings(),
+            lowStockCount = 0,
             onLoginClick = {},
             onRegisterClick = {},
+            onInventoryClick = {},
             onLogout = {},
             onLargeViewChange = {},
             onHighContrastChange = {}
@@ -177,8 +219,10 @@ private fun ProfileUserPreview() {
         ProfileScreen(
             user = User("Administrador", "admin@ternurines.pe", UserRole.ADMIN),
             accessibility = AccessibilitySettings(highContrast = true),
+            lowStockCount = 3,
             onLoginClick = {},
             onRegisterClick = {},
+            onInventoryClick = {},
             onLogout = {},
             onLargeViewChange = {},
             onHighContrastChange = {}

@@ -14,6 +14,7 @@ import com.example.testapp.ui.screens.checkout.CheckoutRoute
 import com.example.testapp.ui.screens.checkout.OrderConfirmedScreen
 import com.example.testapp.ui.screens.detail.ProductDetailRoute
 import com.example.testapp.ui.screens.favorites.FavoritesRoute
+import com.example.testapp.ui.screens.inventory.InventoryRoute
 import com.example.testapp.ui.screens.login.LoginRoute
 import com.example.testapp.ui.screens.profile.ProfileRoute
 import com.example.testapp.ui.screens.register.RegisterRoute
@@ -61,7 +62,7 @@ fun AppNavHost(
         ) { entry ->
             OrderConfirmedScreen(
                 orderId = entry.arguments?.getInt(Routes.ORDER_ID) ?: 0,
-                onBackToCatalog = { navController.navigateToTab(Routes.HOME) }
+                onBackToCatalog = { navController.popBackStack(Routes.HOME, inclusive = false) }
             )
         }
         composable(Routes.FAVORITES) {
@@ -74,13 +75,17 @@ fun AppNavHost(
         composable(Routes.PROFILE) {
             ProfileRoute(
                 onLoginClick = { navController.navigate(Routes.LOGIN) },
-                onRegisterClick = { navController.navigate(Routes.REGISTER) }
+                onRegisterClick = { navController.navigate(Routes.REGISTER) },
+                onInventoryClick = { navController.navigate(Routes.INVENTORY) }
             )
+        }
+        composable(Routes.INVENTORY) {
+            InventoryRoute(onBack = { navController.popBackStack() })
         }
         composable(Routes.LOGIN) {
             LoginRoute(
                 onBack = { navController.popBackStack() },
-                onLoggedIn = { navController.navigateToTab(Routes.HOME) },
+                onLoggedIn = { navController.popBackStack(Routes.LOGIN, inclusive = true) },
                 onRegisterClick = {
                     navController.navigate(Routes.REGISTER) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
