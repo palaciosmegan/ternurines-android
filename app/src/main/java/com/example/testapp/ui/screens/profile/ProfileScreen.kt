@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +38,7 @@ fun ProfileRoute(
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit,
     onInventoryClick: () -> Unit,
+    onSupportClick: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val user by viewModel.currentUser.collectAsStateWithLifecycle()
@@ -50,6 +52,7 @@ fun ProfileRoute(
         onLoginClick = onLoginClick,
         onRegisterClick = onRegisterClick,
         onInventoryClick = onInventoryClick,
+        onSupportClick = onSupportClick,
         onLogout = viewModel::logout,
         onLargeViewChange = viewModel::setLargeView,
         onHighContrastChange = viewModel::setHighContrast
@@ -64,6 +67,7 @@ fun ProfileScreen(
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit,
     onInventoryClick: () -> Unit,
+    onSupportClick: () -> Unit,
     onLogout: () -> Unit,
     onLargeViewChange: (Boolean) -> Unit,
     onHighContrastChange: (Boolean) -> Unit
@@ -83,7 +87,34 @@ fun ProfileScreen(
                 AdminSection(lowStockCount, onInventoryClick)
             }
         }
+        SupportSection(onSupportClick)
         AccessibilitySection(accessibility, onLargeViewChange, onHighContrastChange)
+    }
+}
+
+@Composable
+private fun SupportSection(onSupportClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text("¿Necesitas ayuda?", style = MaterialTheme.typography.titleLarge)
+            Text(
+                "Comunícate con nuestro equipo sobre pedidos, envíos o personalización."
+            )
+            AppButton(
+                text = "Centro de soporte",
+                onClick = onSupportClick,
+                style = AppButtonStyle.Secondary,
+                icon = Icons.Outlined.SupportAgent,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 
@@ -205,6 +236,7 @@ private fun ProfileGuestPreview() {
             onLoginClick = {},
             onRegisterClick = {},
             onInventoryClick = {},
+            onSupportClick = {},
             onLogout = {},
             onLargeViewChange = {},
             onHighContrastChange = {}
@@ -223,6 +255,7 @@ private fun ProfileUserPreview() {
             onLoginClick = {},
             onRegisterClick = {},
             onInventoryClick = {},
+            onSupportClick = {},
             onLogout = {},
             onLargeViewChange = {},
             onHighContrastChange = {}

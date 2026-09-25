@@ -9,6 +9,7 @@ object Routes {
     const val REGISTER = "register"
     const val CHECKOUT = "checkout"
     const val INVENTORY = "admin/inventory"
+    const val SUPPORT = "support"
 
     const val PRODUCT_ID = "productId"
     const val PRODUCT_DETAIL = "product/{$PRODUCT_ID}"
