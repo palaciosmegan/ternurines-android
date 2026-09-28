@@ -18,6 +18,7 @@ import com.example.testapp.ui.screens.inventory.InventoryRoute
 import com.example.testapp.ui.screens.login.LoginRoute
 import com.example.testapp.ui.screens.profile.ProfileRoute
 import com.example.testapp.ui.screens.register.RegisterRoute
+import com.example.testapp.ui.screens.support.SupportRoute
 
 @Composable
 fun AppNavHost(
@@ -76,8 +77,12 @@ fun AppNavHost(
             ProfileRoute(
                 onLoginClick = { navController.navigate(Routes.LOGIN) },
                 onRegisterClick = { navController.navigate(Routes.REGISTER) },
-                onInventoryClick = { navController.navigate(Routes.INVENTORY) }
+                onInventoryClick = { navController.navigate(Routes.INVENTORY) },
+                onSupportClick = { navController.navigate(Routes.SUPPORT) }
             )
+        }
+        composable(Routes.SUPPORT) {
+            SupportRoute(onBack = { navController.popBackStack() })
         }
         composable(Routes.INVENTORY) {
             InventoryRoute(onBack = { navController.popBackStack() })
