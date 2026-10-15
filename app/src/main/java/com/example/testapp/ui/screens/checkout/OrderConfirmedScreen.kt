@@ -20,7 +20,7 @@ fun OrderConfirmedScreen(
         EmptyState(
             icon = Icons.Outlined.CheckCircle,
             title = "¡Compra completada con éxito!",
-            message = "Tu pedido #$orderId fue registrado como pagado y está siendo procesado.",
+            message = "Tu pedido #$orderId ya está confirmado. Puedes ver cuándo llega en Perfil > Mis compras.",
             actionText = "Volver al catálogo",
             onAction = onBackToCatalog
         )

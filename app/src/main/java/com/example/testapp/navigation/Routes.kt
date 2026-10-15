@@ -9,7 +9,16 @@ object Routes {
     const val REGISTER = "register"
     const val CHECKOUT = "checkout"
     const val INVENTORY = "admin/inventory"
+
+    const val REDIRECT = "redirect"
+    const val LOGIN_ROUTE = "$LOGIN?$REDIRECT={$REDIRECT}"
+    const val REGISTER_ROUTE = "$REGISTER?$REDIRECT={$REDIRECT}"
+
+    fun login(redirect: String? = null) = if (redirect == null) LOGIN else "$LOGIN?$REDIRECT=$redirect"
+
+    fun register(redirect: String? = null) = if (redirect == null) REGISTER else "$REGISTER?$REDIRECT=$redirect"
     const val SUPPORT = "support"
+    const val ORDERS = "orders"
 
     const val PRODUCT_ID = "productId"
     const val PRODUCT_DETAIL = "product/{$PRODUCT_ID}"

@@ -35,6 +35,7 @@ fun LoginRoute(
     onBack: () -> Unit,
     onLoggedIn: () -> Unit,
     onRegisterClick: () -> Unit,
+    forPurchase: Boolean = false,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val state = viewModel.uiState
@@ -49,7 +50,8 @@ fun LoginRoute(
         onPasswordChange = viewModel::onPasswordChange,
         onLogin = viewModel::login,
         onRegisterClick = onRegisterClick,
-        onBack = onBack
+        onBack = onBack,
+        forPurchase = forPurchase
     )
 }
 
@@ -60,7 +62,8 @@ fun LoginScreen(
     onPasswordChange: (String) -> Unit,
     onLogin: () -> Unit,
     onRegisterClick: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    forPurchase: Boolean = false
 ) {
     Column(Modifier.fillMaxSize()) {
         AppTopBar(title = "Iniciar sesión", onBack = onBack)
@@ -73,10 +76,17 @@ fun LoginScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            SectionHeader(
-                title = "Bienvenido a Ternurines",
-                subtitle = "Inicia sesión para ver tu historial de compras y favoritos."
-            )
+            if (forPurchase) {
+                SectionHeader(
+                    title = "Inicia sesión para comprar",
+                    subtitle = "Así guardamos tu pedido y puedes seguirlo desde tu perfil. Tu carrito te espera."
+                )
+            } else {
+                SectionHeader(
+                    title = "Bienvenido a Ternurines",
+                    subtitle = "Inicia sesión para ver tu historial de compras y favoritos."
+                )
+            }
 
             AppTextField(
                 value = state.email,
@@ -105,8 +115,9 @@ fun LoginScreen(
             }
 
             AppButton(
-                text = "Iniciar sesión",
+                text = if (state.isLoading) "Entrando…" else "Iniciar sesión",
                 onClick = onLogin,
+                enabled = !state.isLoading,
                 modifier = Modifier.fillMaxWidth()
             )
 

@@ -33,6 +33,7 @@ import com.example.testapp.ui.theme.TestAppTheme
 fun CartRoute(
     onContinueShopping: () -> Unit,
     onCheckout: () -> Unit,
+    onLoginRequired: () -> Unit,
     viewModel: CartViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -42,7 +43,7 @@ fun CartRoute(
         onQuantityChange = viewModel::updateQuantity,
         onRemove = viewModel::remove,
         onContinueShopping = onContinueShopping,
-        onCheckout = onCheckout
+        onCheckout = { if (viewModel.isLoggedIn) onCheckout() else onLoginRequired() }
     )
 }
 

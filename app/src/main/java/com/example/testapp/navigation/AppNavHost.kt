@@ -16,6 +16,7 @@ import com.example.testapp.ui.screens.detail.ProductDetailRoute
 import com.example.testapp.ui.screens.favorites.FavoritesRoute
 import com.example.testapp.ui.screens.inventory.InventoryRoute
 import com.example.testapp.ui.screens.login.LoginRoute
+import com.example.testapp.ui.screens.orders.OrdersRoute
 import com.example.testapp.ui.screens.profile.ProfileRoute
 import com.example.testapp.ui.screens.register.RegisterRoute
 import com.example.testapp.ui.screens.support.SupportRoute
@@ -44,7 +45,8 @@ fun AppNavHost(
         composable(Routes.CART) {
             CartRoute(
                 onContinueShopping = { navController.navigateToTab(Routes.HOME) },
-                onCheckout = { navController.navigate(Routes.CHECKOUT) }
+                onCheckout = { navController.navigate(Routes.CHECKOUT) },
+                onLoginRequired = { navController.navigate(Routes.login(redirect = Routes.CHECKOUT)) }
             )
         }
         composable(Routes.CHECKOUT) {
@@ -78,7 +80,14 @@ fun AppNavHost(
                 onLoginClick = { navController.navigate(Routes.LOGIN) },
                 onRegisterClick = { navController.navigate(Routes.REGISTER) },
                 onInventoryClick = { navController.navigate(Routes.INVENTORY) },
-                onSupportClick = { navController.navigate(Routes.SUPPORT) }
+                onSupportClick = { navController.navigate(Routes.SUPPORT) },
+                onOrdersClick = { navController.navigate(Routes.ORDERS) }
+            )
+        }
+        composable(Routes.ORDERS) {
+            OrdersRoute(
+                onBack = { navController.popBackStack() },
+                onExploreCatalog = { navController.navigateToTab(Routes.HOME) }
             )
         }
         composable(Routes.SUPPORT) {
@@ -87,28 +96,52 @@ fun AppNavHost(
         composable(Routes.INVENTORY) {
             InventoryRoute(onBack = { navController.popBackStack() })
         }
-        composable(Routes.LOGIN) {
+        composable(
+            route = Routes.LOGIN_ROUTE,
+            arguments = listOf(redirectArgument())
+        ) { entry ->
+            val redirect = entry.arguments?.getString(Routes.REDIRECT)
             LoginRoute(
+                forPurchase = redirect == Routes.CHECKOUT,
                 onBack = { navController.popBackStack() },
-                onLoggedIn = { navController.popBackStack(Routes.LOGIN, inclusive = true) },
+                onLoggedIn = {
+                    if (redirect == null) {
+                        navController.popBackStack(Routes.LOGIN_ROUTE, inclusive = true)
+                    } else {
+                        navController.navigate(redirect) {
+                            popUpTo(Routes.LOGIN_ROUTE) { inclusive = true }
+                        }
+                    }
+                },
                 onRegisterClick = {
-                    navController.navigate(Routes.REGISTER) {
-                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    navController.navigate(Routes.register(redirect)) {
+                        popUpTo(Routes.LOGIN_ROUTE) { inclusive = true }
                     }
                 }
             )
         }
-        composable(Routes.REGISTER) {
+        composable(
+            route = Routes.REGISTER_ROUTE,
+            arguments = listOf(redirectArgument())
+        ) { entry ->
+            val redirect = entry.arguments?.getString(Routes.REDIRECT)
             RegisterRoute(
+                forPurchase = redirect == Routes.CHECKOUT,
                 onBack = { navController.popBackStack() },
                 onLoginClick = {
-                    navController.navigate(Routes.LOGIN) {
-                        popUpTo(Routes.REGISTER) { inclusive = true }
+                    navController.navigate(Routes.login(redirect)) {
+                        popUpTo(Routes.REGISTER_ROUTE) { inclusive = true }
                     }
                 }
             )
         }
     }
+}
+
+private fun redirectArgument() = navArgument(Routes.REDIRECT) {
+    type = NavType.StringType
+    nullable = true
+    defaultValue = null
 }
 
 fun NavHostController.navigateToTab(route: String) {

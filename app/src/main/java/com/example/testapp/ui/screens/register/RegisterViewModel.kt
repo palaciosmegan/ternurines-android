@@ -4,9 +4,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.testapp.data.AuthRepository
+import com.example.testapp.data.AuthResult
 import com.example.testapp.util.Validators
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class RegisterUiState(
@@ -18,6 +21,8 @@ data class RegisterUiState(
     val emailError: String? = null,
     val passwordError: String? = null,
     val confirmPasswordError: String? = null,
+    val generalError: String? = null,
+    val isLoading: Boolean = false,
     val isRegistered: Boolean = false
 )
 
@@ -63,11 +68,19 @@ class RegisterViewModel @Inject constructor(
             withErrors.confirmPasswordError
         ).any { it != null }
 
-        uiState = when {
-            hasErrors -> withErrors
-            !authRepository.register(state.name, state.email, state.password) ->
-                withErrors.copy(emailError = "Ya existe una cuenta con este correo.")
-            else -> withErrors.copy(isRegistered = true)
+        if (hasErrors || state.isLoading) {
+            uiState = withErrors
+            return
+        }
+
+        uiState = withErrors.copy(isLoading = true, generalError = null)
+        viewModelScope.launch {
+            uiState = when (val result = authRepository.register(state.name, state.email, state.password)) {
+                AuthResult.Success -> uiState.copy(isLoading = false, isRegistered = true)
+                is AuthResult.Error ->
+                    if (result.emailTaken) uiState.copy(isLoading = false, emailError = result.message)
+                    else uiState.copy(isLoading = false, generalError = result.message)
+            }
         }
     }
 }

@@ -24,11 +24,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.testapp.data.model.Districts
 import com.example.testapp.data.model.PaymentMethod
 import com.example.testapp.ui.components.AppButton
 import com.example.testapp.ui.components.AppTextField
 import com.example.testapp.ui.components.AppTopBar
 import com.example.testapp.ui.components.CardForm
+import com.example.testapp.ui.components.DropdownField
 import com.example.testapp.ui.components.PaymentMethodSelector
 import com.example.testapp.ui.components.PaymentQrDialog
 import com.example.testapp.ui.components.TotalRow
@@ -51,10 +53,9 @@ fun CheckoutRoute(
         state = state,
         total = items.sumOf { it.subtotal },
         actions = CheckoutActions(
-            onFullNameChange = viewModel::onFullNameChange,
-            onEmailChange = viewModel::onEmailChange,
             onPhoneChange = viewModel::onPhoneChange,
             onAddressChange = viewModel::onAddressChange,
+            onDistrictChange = viewModel::onDistrictChange,
             onPaymentMethodChange = viewModel::onPaymentMethodChange,
             onCardNumberChange = viewModel::onCardNumberChange,
             onCardExpiryChange = viewModel::onCardExpiryChange,
@@ -68,10 +69,9 @@ fun CheckoutRoute(
 }
 
 data class CheckoutActions(
-    val onFullNameChange: (String) -> Unit = {},
-    val onEmailChange: (String) -> Unit = {},
     val onPhoneChange: (String) -> Unit = {},
     val onAddressChange: (String) -> Unit = {},
+    val onDistrictChange: (String) -> Unit = {},
     val onPaymentMethodChange: (PaymentMethod) -> Unit = {},
     val onCardNumberChange: (String) -> Unit = {},
     val onCardExpiryChange: (String) -> Unit = {},
@@ -101,19 +101,16 @@ fun CheckoutScreen(
         ) {
             FormTitle("Datos de compra")
 
-            AppTextField(
-                value = state.fullName,
-                onValueChange = actions.onFullNameChange,
-                label = "Nombre completo",
-                error = state.fullNameError
+            Text(
+                text = "Comprando como ${state.fullName}",
+                style = MaterialTheme.typography.bodyLarge
             )
-            AppTextField(
-                value = state.email,
-                onValueChange = actions.onEmailChange,
-                label = "Correo electrónico",
-                error = state.emailError,
-                keyboardType = KeyboardType.Email
+            Text(
+                text = state.email,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
             AppTextField(
                 value = state.phone,
                 onValueChange = actions.onPhoneChange,
@@ -127,6 +124,13 @@ fun CheckoutScreen(
                 label = "Dirección de envío",
                 error = state.addressError,
                 imeAction = ImeAction.Done
+            )
+            DropdownField(
+                value = state.district,
+                options = Districts.all,
+                onSelect = actions.onDistrictChange,
+                label = "Distrito",
+                error = state.districtError
             )
 
             FormTitle("Método de pago")
@@ -158,8 +162,9 @@ fun CheckoutScreen(
             TotalRow(amount = total, modifier = Modifier.padding(vertical = 8.dp))
 
             AppButton(
-                text = "Proceder al pago",
+                text = if (state.isPlacing) "Procesando tu compra…" else "Proceder al pago",
                 onClick = actions.onPay,
+                enabled = !state.isPlacing,
                 modifier = Modifier.fillMaxWidth()
             )
         }

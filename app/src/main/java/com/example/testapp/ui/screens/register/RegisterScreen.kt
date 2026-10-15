@@ -18,6 +18,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,9 +37,11 @@ import com.example.testapp.ui.theme.TestAppTheme
 fun RegisterRoute(
     onBack: () -> Unit,
     onLoginClick: () -> Unit,
+    forPurchase: Boolean = false,
     viewModel: RegisterViewModel = hiltViewModel()
 ) {
     RegisterScreen(
+        forPurchase = forPurchase,
         state = viewModel.uiState,
         onNameChange = viewModel::onNameChange,
         onEmailChange = viewModel::onEmailChange,
@@ -57,7 +62,8 @@ fun RegisterScreen(
     onConfirmPasswordChange: (String) -> Unit,
     onRegister: () -> Unit,
     onLoginClick: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    forPurchase: Boolean = false
 ) {
     Column(Modifier.fillMaxSize()) {
         AppTopBar(title = "Crear cuenta", onBack = onBack)
@@ -71,8 +77,9 @@ fun RegisterScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             SectionHeader(
-                title = "Crea tu cuenta",
-                subtitle = "Regístrate para guardar tu historial de compras y favoritos."
+                title = if (forPurchase) "Crea tu cuenta para comprar" else "Crea tu cuenta",
+                subtitle = if (forPurchase) "Solo toma un minuto y luego seguimos con tu compra."
+                else "Regístrate para guardar tu historial de compras y favoritos."
             )
 
             AppTextField(
@@ -106,9 +113,19 @@ fun RegisterScreen(
                 imeAction = ImeAction.Done
             )
 
+            if (state.generalError != null) {
+                Text(
+                    text = state.generalError,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
+                )
+            }
+
             AppButton(
-                text = "Crear cuenta",
+                text = if (state.isLoading) "Creando cuenta…" else "Crear cuenta",
                 onClick = onRegister,
+                enabled = !state.isLoading,
                 modifier = Modifier.fillMaxWidth()
             )
 

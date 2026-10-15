@@ -2,6 +2,7 @@ package com.example.testapp.ui.screens.cart
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.testapp.data.AuthRepository
 import com.example.testapp.data.CartRepository
 import com.example.testapp.data.model.CartItem
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,8 +20,11 @@ data class CartUiState(
 
 @HiltViewModel
 class CartViewModel @Inject constructor(
-    private val cartRepository: CartRepository
+    private val cartRepository: CartRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
+
+    val isLoggedIn: Boolean get() = authRepository.currentUser.value != null
 
     val uiState: StateFlow<CartUiState> = cartRepository.items
         .map { CartUiState(it) }

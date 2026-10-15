@@ -8,15 +8,19 @@ import androidx.lifecycle.viewModelScope
 import com.example.testapp.data.AuthRepository
 import com.example.testapp.data.CartRepository
 import com.example.testapp.data.OrderRepository
+import com.example.testapp.data.OrderResult
+import com.example.testapp.data.ShippingRepository
 import com.example.testapp.data.model.CartItem
 import com.example.testapp.data.model.CheckoutDetails
 import com.example.testapp.data.model.PaymentMethod
+import com.example.testapp.data.model.ShippingInfo
 import com.example.testapp.ui.components.CardInput
 import com.example.testapp.util.Validators
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class CheckoutUiState(
@@ -24,14 +28,15 @@ data class CheckoutUiState(
     val email: String = "",
     val phone: String = "",
     val address: String = "",
+    val district: String = "",
     val paymentMethod: PaymentMethod = PaymentMethod.YAPE,
     val card: CardInput = CardInput(),
-    val fullNameError: String? = null,
-    val emailError: String? = null,
     val phoneError: String? = null,
     val addressError: String? = null,
+    val districtError: String? = null,
     val paymentError: String? = null,
     val showQr: Boolean = false,
+    val isPlacing: Boolean = false,
     val placedOrderId: Int? = null
 )
 
@@ -39,26 +44,43 @@ data class CheckoutUiState(
 class CheckoutViewModel @Inject constructor(
     authRepository: AuthRepository,
     cartRepository: CartRepository,
-    private val orderRepository: OrderRepository
+    private val orderRepository: OrderRepository,
+    private val shippingRepository: ShippingRepository
 ) : ViewModel() {
 
     val items: StateFlow<List<CartItem>> = cartRepository.items
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    var uiState by mutableStateOf(
-        CheckoutUiState(
-            fullName = authRepository.currentUser.value?.name.orEmpty(),
-            email = authRepository.currentUser.value?.email.orEmpty()
-        )
-    )
+    private val user = authRepository.currentUser.value
+
+    var uiState by mutableStateOf(initialState())
         private set
 
-    fun onFullNameChange(value: String) {
-        uiState = uiState.copy(fullName = value, fullNameError = null)
+    init {
+        // Con API, si no hay dirección guardada en el teléfono, se trae la del servidor.
+        viewModelScope.launch {
+            val remote = shippingRepository.fetchRemote() ?: return@launch
+            val current = uiState
+            if (current.phone.isBlank() && current.address.isBlank() && current.district.isBlank()) {
+                uiState = current.copy(phone = remote.phone, address = remote.address, district = remote.district)
+            }
+        }
     }
 
-    fun onEmailChange(value: String) {
-        uiState = uiState.copy(email = value, emailError = null)
+    private fun initialState(): CheckoutUiState {
+        val email = user?.email.orEmpty()
+        val saved = shippingRepository.get(email)
+        return CheckoutUiState(
+            fullName = user?.name.orEmpty(),
+            email = email,
+            phone = saved?.phone.orEmpty(),
+            address = saved?.address.orEmpty(),
+            district = saved?.district.orEmpty()
+        )
+    }
+
+    fun onDistrictChange(value: String) {
+        uiState = uiState.copy(district = value, districtError = null)
     }
 
     fun onPhoneChange(value: String) {
@@ -113,23 +135,30 @@ class CheckoutViewModel @Inject constructor(
             email = state.email.trim(),
             phone = state.phone,
             address = state.address.trim(),
+            district = state.district,
             paymentMethod = state.paymentMethod
         )
-        val order = orderRepository.placeOrder(details, items.value)
-        uiState = uiState.copy(placedOrderId = order.id)
+        if (state.isPlacing) return
+
+        shippingRepository.save(details.email, ShippingInfo(details.phone, details.address, details.district))
+        uiState = state.copy(isPlacing = true, paymentError = null)
+
+        viewModelScope.launch {
+            uiState = when (val result = orderRepository.placeOrder(details, items.value)) {
+                is OrderResult.Success -> uiState.copy(isPlacing = false, placedOrderId = result.order.id)
+                is OrderResult.Error -> uiState.copy(isPlacing = false, paymentError = result.message)
+            }
+        }
     }
 
     private fun validateCustomer(): Boolean {
         val state = uiState
         uiState = state.copy(
-            fullNameError = if (Validators.hasMinLength(state.fullName, 3)) null
-            else "El nombre es requerido y debe tener al menos 3 letras.",
-            emailError = if (Validators.isValidEmail(state.email)) null else "Ingresa un correo válido.",
             phoneError = if (Validators.isValidPhone(state.phone)) null else "Ingresa un celular válido de 9 dígitos.",
-            addressError = if (state.address.isNotBlank()) null else "Ingresa tu dirección de envío."
+            addressError = if (state.address.isNotBlank()) null else "Ingresa tu dirección de envío.",
+            districtError = if (state.district.isNotBlank()) null else "Selecciona tu distrito."
         )
-        return listOf(uiState.fullNameError, uiState.emailError, uiState.phoneError, uiState.addressError)
-            .all { it == null }
+        return listOf(uiState.phoneError, uiState.addressError, uiState.districtError).all { it == null }
     }
 
     private fun validateCard(): Boolean {

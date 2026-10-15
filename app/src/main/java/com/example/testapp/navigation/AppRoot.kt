@@ -7,6 +7,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -23,7 +24,15 @@ fun AppRoot(viewModel: AppRootViewModel = hiltViewModel()) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val cartCount by viewModel.cartCount.collectAsStateWithLifecycle()
+    val favoritesCount by viewModel.favoritesCount.collectAsStateWithLifecycle()
+    val lowStockCount by viewModel.lowStockCount.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.sessionExpired.collect {
+            snackbarHostState.showSnackbar("Tu sesión venció. Inicia sesión de nuevo.")
+        }
+    }
 
     CompositionLocalProvider(LocalSnackbarHostState provides snackbarHostState) {
         Scaffold(
@@ -33,6 +42,8 @@ fun AppRoot(viewModel: AppRootViewModel = hiltViewModel()) {
                     AppBottomBar(
                         currentRoute = currentRoute,
                         cartCount = cartCount,
+                        favoritesCount = favoritesCount,
+                        lowStockCount = lowStockCount,
                         onTabSelected = { navController.navigateToTab(it.route) }
                     )
                 }

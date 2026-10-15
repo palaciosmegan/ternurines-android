@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.LocalShipping
 import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -39,6 +40,7 @@ fun ProfileRoute(
     onRegisterClick: () -> Unit,
     onInventoryClick: () -> Unit,
     onSupportClick: () -> Unit,
+    onOrdersClick: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val user by viewModel.currentUser.collectAsStateWithLifecycle()
@@ -53,6 +55,7 @@ fun ProfileRoute(
         onRegisterClick = onRegisterClick,
         onInventoryClick = onInventoryClick,
         onSupportClick = onSupportClick,
+        onOrdersClick = onOrdersClick,
         onLogout = viewModel::logout,
         onLargeViewChange = viewModel::setLargeView,
         onHighContrastChange = viewModel::setHighContrast
@@ -68,6 +71,7 @@ fun ProfileScreen(
     onRegisterClick: () -> Unit,
     onInventoryClick: () -> Unit,
     onSupportClick: () -> Unit,
+    onOrdersClick: () -> Unit,
     onLogout: () -> Unit,
     onLargeViewChange: (Boolean) -> Unit,
     onHighContrastChange: (Boolean) -> Unit
@@ -83,12 +87,37 @@ fun ProfileScreen(
             GuestSection(onLoginClick, onRegisterClick)
         } else {
             UserSection(user, onLogout)
+            OrdersSection(onOrdersClick)
             if (user.isAdmin) {
                 AdminSection(lowStockCount, onInventoryClick)
             }
         }
         SupportSection(onSupportClick)
         AccessibilitySection(accessibility, onLargeViewChange, onHighContrastChange)
+    }
+}
+
+@Composable
+private fun OrdersSection(onOrdersClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text("Mis compras", style = MaterialTheme.typography.titleLarge)
+            Text("Revisa qué compraste y cuándo llega tu pedido.")
+            AppButton(
+                text = "Ver mis compras",
+                onClick = onOrdersClick,
+                style = AppButtonStyle.Secondary,
+                icon = Icons.Outlined.LocalShipping,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 
@@ -237,6 +266,7 @@ private fun ProfileGuestPreview() {
             onRegisterClick = {},
             onInventoryClick = {},
             onSupportClick = {},
+            onOrdersClick = {},
             onLogout = {},
             onLargeViewChange = {},
             onHighContrastChange = {}
@@ -256,6 +286,7 @@ private fun ProfileUserPreview() {
             onRegisterClick = {},
             onInventoryClick = {},
             onSupportClick = {},
+            onOrdersClick = {},
             onLogout = {},
             onLargeViewChange = {},
             onHighContrastChange = {}

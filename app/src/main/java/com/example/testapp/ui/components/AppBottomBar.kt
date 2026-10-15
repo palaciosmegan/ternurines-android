@@ -19,19 +19,29 @@ import com.example.testapp.navigation.BottomTab
 fun AppBottomBar(
     currentRoute: String?,
     cartCount: Int,
-    onTabSelected: (BottomTab) -> Unit
+    onTabSelected: (BottomTab) -> Unit,
+    favoritesCount: Int = 0,
+    lowStockCount: Int = 0
 ) {
     val colors = MaterialTheme.colorScheme
 
     NavigationBar(containerColor = colors.surfaceContainerLowest) {
         BottomTab.entries.forEach { tab ->
             val selected = currentRoute == tab.route
+            val badge = when (tab) {
+                BottomTab.Cart -> TabBadge(cartCount, "$cartCount productos en el carrito")
+                BottomTab.Favorites -> TabBadge(favoritesCount, "$favoritesCount favoritos")
+                BottomTab.Profile -> TabBadge(
+                    count = lowStockCount,
+                    description = "$lowStockCount productos con stock bajo",
+                    isAlert = true
+                )
+                else -> TabBadge(0, "")
+            }
             NavigationBarItem(
                 selected = selected,
                 onClick = { onTabSelected(tab) },
-                icon = {
-                    TabIcon(tab, selected, badgeCount = if (tab == BottomTab.Cart) cartCount else 0)
-                },
+                icon = { TabIcon(tab, selected, badge) },
                 label = { Text(tab.label) },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colors.primary,
@@ -43,18 +53,21 @@ fun AppBottomBar(
     }
 }
 
+private data class TabBadge(val count: Int, val description: String, val isAlert: Boolean = false)
+
 @Composable
-private fun TabIcon(tab: BottomTab, selected: Boolean, badgeCount: Int) {
+private fun TabIcon(tab: BottomTab, selected: Boolean, badge: TabBadge) {
     val icon = if (selected) tab.selectedIcon else tab.icon
 
-    if (badgeCount > 0) {
+    if (badge.count > 0) {
         BadgedBox(
             badge = {
                 Badge(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.semantics { contentDescription = "$badgeCount productos" }
+                    containerColor = if (badge.isAlert) MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.semantics { contentDescription = badge.description }
                 ) {
-                    Text("$badgeCount")
+                    Text("${badge.count}")
                 }
             }
         ) {

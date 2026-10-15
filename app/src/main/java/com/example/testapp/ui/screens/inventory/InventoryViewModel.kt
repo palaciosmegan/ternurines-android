@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class InventoryItemState(
@@ -71,10 +72,14 @@ class InventoryViewModel @Inject constructor(
         when {
             stock == null -> showError(productId, "Ingresa un número entero.")
             stock < 0 -> showError(productId, "El stock no puede ser negativo.")
-            else -> {
-                catalogRepository.updateStock(productId, stock)
-                inputs.update { it - productId }
-                savedIds.update { it + productId }
+            else -> viewModelScope.launch {
+                val error = catalogRepository.updateStock(productId, stock)
+                if (error == null) {
+                    inputs.update { it - productId }
+                    savedIds.update { it + productId }
+                } else {
+                    showError(productId, error)
+                }
             }
         }
     }
