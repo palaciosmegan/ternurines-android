@@ -21,10 +21,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Favoritos por usuario, guardados en el teléfono. Con API y sesión iniciada también se sincronizan
- * con el servidor: se bajan al iniciar sesión y cada cambio se envía en segundo plano.
- */
 @Singleton
 class FavoritesRepository @Inject constructor(
     @ApplicationContext context: Context,
@@ -50,7 +46,6 @@ class FavoritesRepository @Inject constructor(
     init {
         if (config.isConfigured) {
             scope.launch {
-                // Se ejecuta al abrir la app con sesión guardada y cada vez que alguien inicia sesión.
                 authRepository.currentUser.collect { user -> if (user != null) pullRemote(user) }
             }
         }
@@ -76,8 +71,8 @@ class FavoritesRepository @Inject constructor(
                 if (adding) api.addFavorite(ProductRefRequest(productId)) else api.removeFavorite(productId)
             }
             result.onFailure { error ->
-                if ((error as? ApiException)?.code == 409) return@onFailure // ya estaba como favorito
-                pullRemote(user) // si falló, se vuelve a lo que dice el servidor
+                if ((error as? ApiException)?.code == 409) return@onFailure
+                pullRemote(user)
             }
         }
     }

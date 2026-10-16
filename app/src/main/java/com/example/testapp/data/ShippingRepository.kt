@@ -7,10 +7,6 @@ import com.example.testapp.data.remote.apiCall
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Guarda una sola dirección de envío por cuenta (clave: correo).
- * Con API, la dirección también vive en el servidor: se guarda al crear un pedido y se recupera con [fetchRemote].
- */
 @Singleton
 class ShippingRepository @Inject constructor(
     private val api: TernurinesApi,
@@ -26,7 +22,6 @@ class ShippingRepository @Inject constructor(
         saved[key(email)] = info
     }
 
-    /** Dirección guardada en el servidor para el usuario con sesión (null si no hay, o si falla). */
     suspend fun fetchRemote(): ShippingInfo? {
         val user = authRepository.currentUser.value
         if (!config.isConfigured || user == null) return null

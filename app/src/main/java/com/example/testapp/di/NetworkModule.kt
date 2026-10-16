@@ -23,7 +23,6 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(session: SessionStore): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
-            // BASIC no imprime el cuerpo, así que las contraseñas y el token no quedan en el log.
             level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BASIC else HttpLoggingInterceptor.Level.NONE
         }
         return OkHttpClient.Builder()
@@ -36,7 +35,6 @@ object NetworkModule {
                 )
             }
             .addInterceptor(logging)
-            // Lambda puede tardar unos segundos en responder la primera vez (arranque en frío).
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .build()
@@ -45,7 +43,6 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideApi(client: OkHttpClient, config: ApiConfig): TernurinesApi {
-        // Sin URL configurada se usa una dirección de relleno: el API nunca se llama (modo local).
         val baseUrl = if (config.isConfigured) config.baseUrl.trimEnd('/') + "/" else "http://localhost/"
         return Retrofit.Builder()
             .baseUrl(baseUrl)

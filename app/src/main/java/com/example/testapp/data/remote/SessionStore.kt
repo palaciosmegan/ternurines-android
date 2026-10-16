@@ -8,7 +8,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Guarda la sesión (token JWT y datos básicos) en el teléfono para no pedir login cada vez. */
 @Singleton
 class SessionStore @Inject constructor(
     @ApplicationContext context: Context

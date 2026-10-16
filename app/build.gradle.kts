@@ -1,18 +1,8 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-}
-
-// URL base del API (API Gateway). Se define en local.properties (no se sube a git):
-//   api.baseUrl=https://xxxx.execute-api.us-east-1.amazonaws.com
-// Si no está definida, la app funciona en modo local (datos en memoria).
-val apiBaseUrl: String = Properties().let { props ->
-    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { props.load(it) }
-    props.getProperty("api.baseUrl", "").trim()
 }
 
 android {
@@ -29,8 +19,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }
 
     buildTypes {

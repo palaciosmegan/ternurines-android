@@ -9,7 +9,6 @@ class ApiException(message: String, val code: Int? = null) : Exception(message) 
     val isUnauthorized: Boolean get() = code == 401
 }
 
-/** Ejecuta una llamada al API y convierte los errores en mensajes amigables para el usuario. */
 suspend fun <T> apiCall(block: suspend () -> T): Result<T> = try {
     Result.success(block())
 } catch (e: HttpException) {

@@ -21,8 +21,6 @@ data class AuthResponse(
 
 data class ErrorResponse(val error: String? = null)
 
-// ---- carrito y favoritos ----
-
 data class CartAddRequest(
     @SerializedName("product_id") val productId: String,
     val quantity: Int
@@ -40,8 +38,6 @@ data class CartLineDto(
 data class CartResponse(val items: List<CartLineDto> = emptyList())
 
 data class FavoriteDto(val product: Product)
-
-// ---- dirección, stock y pedidos ----
 
 data class AddressDto(
     val phone: String = "",

@@ -36,7 +36,6 @@ class OrdersViewModel @Inject constructor(
         refresh()
     }
 
-    /** Con API, trae los pedidos del servidor (en modo local no hace nada). */
     fun refresh() {
         viewModelScope.launch {
             _isLoading.value = true

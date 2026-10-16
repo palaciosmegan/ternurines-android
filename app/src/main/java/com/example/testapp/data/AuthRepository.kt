@@ -24,10 +24,6 @@ sealed interface AuthResult {
     data class Error(val message: String, val emailTaken: Boolean = false) : AuthResult
 }
 
-/**
- * Con `api.baseUrl` configurada habla con el API de AWS y guarda la sesión en el teléfono.
- * Sin URL, funciona en modo local con cuentas en memoria (demo).
- */
 @Singleton
 class AuthRepository @Inject constructor(
     private val api: TernurinesApi,
@@ -59,9 +55,8 @@ class AuthRepository @Inject constructor(
         _currentUser.value = null
     }
 
-    /** El servidor rechazó el token (venció o ya no es válido): cierra la sesión y avisa a la pantalla. */
     fun expireSession() {
-        if (_currentUser.value == null) return // varias llamadas pueden fallar a la vez: avisar una sola vez
+        if (_currentUser.value == null) return
         logout()
         _sessionExpired.tryEmit(Unit)
     }
@@ -83,7 +78,6 @@ class AuthRepository @Inject constructor(
 
     private suspend fun registerRemote(name: String, email: String, password: String): AuthResult =
         apiCall { api.register(RegisterRequest(name.trim(), email.trim(), password)) }.fold(
-            // Se ignora el token: después de crear la cuenta el usuario inicia sesión (flujo actual de la app).
             onSuccess = { AuthResult.Success },
             onFailure = { AuthResult.Error(it.message.orEmpty(), emailTaken = (it as? ApiException)?.code == 409) }
         )

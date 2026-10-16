@@ -27,10 +27,6 @@ sealed interface OrderResult {
     data class Error(val message: String) : OrderResult
 }
 
-/**
- * Con API: el pedido se crea en el servidor (que calcula precios, descuenta stock y vacía su carrito).
- * Sin API: se guarda en memoria como antes.
- */
 @Singleton
 class OrderRepository @Inject constructor(
     private val catalogRepository: CatalogRepository,
@@ -48,7 +44,6 @@ class OrderRepository @Inject constructor(
     suspend fun placeOrder(details: CheckoutDetails, items: List<CartItem>): OrderResult =
         if (config.isConfigured) placeRemote(details, items) else OrderResult.Success(placeLocal(details, items))
 
-    /** Trae del servidor los pedidos del usuario con sesión iniciada. */
     suspend fun refreshOrders() {
         if (!config.isConfigured || authRepository.currentUser.value == null) return
         apiCall { api.orders() }
@@ -56,7 +51,6 @@ class OrderRepository @Inject constructor(
             .onFailure(::handleSessionError)
     }
 
-    /** Solo para uso futuro del admin / pruebas locales. */
     fun updateStatus(orderId: Int, status: OrderStatus) {
         _orders.update { list -> list.map { if (it.id == orderId) it.copy(status = status) else it } }
     }
@@ -65,7 +59,7 @@ class OrderRepository @Inject constructor(
         apiCall { submit(details, items) }.fold(
             onSuccess = { response ->
                 cartRepository.clear()
-                catalogRepository.refresh() // el servidor ya descontó el stock
+                catalogRepository.refresh()
                 val order = buildOrder(response, details, items)
                 _orders.update { it + order }
                 OrderResult.Success(order)
@@ -79,7 +73,6 @@ class OrderRepository @Inject constructor(
             }
         )
 
-    /** El servidor arma el pedido desde SU carrito: se deja igual al del teléfono y luego se crea el pedido. */
     private suspend fun submit(details: CheckoutDetails, items: List<CartItem>): CreateOrderResponse {
         api.cart().items.forEach { api.removeFromCart(it.product.id) }
         items.forEach { api.addToCart(CartAddRequest(it.product.id, it.quantity)) }

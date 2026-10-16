@@ -32,7 +32,6 @@ class CatalogRepository @Inject constructor(
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    // Arranca con el catálogo incluido en la app y, si hay API, se reemplaza con el del servidor.
     private val _products = MutableStateFlow(loadProducts())
     val products: StateFlow<List<Product>> = _products.asStateFlow()
 
@@ -40,7 +39,6 @@ class CatalogRepository @Inject constructor(
         refresh()
     }
 
-    /** Pide el catálogo al API. Si falla o llega vacío, se queda el catálogo local. */
     fun refresh() {
         if (!config.isConfigured) return
         scope.launch {
@@ -56,7 +54,6 @@ class CatalogRepository @Inject constructor(
         list.filter { it.needsRestock }
     }
 
-    /** Devuelve null si salió bien, o el mensaje de error. Con API, el cambio se guarda en el servidor (admin). */
     suspend fun updateStock(productId: String, stock: Int): String? {
         if (config.isConfigured) {
             val failure = apiCall { api.updateStock(productId, StockRequest(stock)) }.exceptionOrNull()

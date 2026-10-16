@@ -23,18 +23,15 @@ class AppRootViewModel @Inject constructor(
     authRepository: AuthRepository
 ) : ViewModel() {
 
-    /** Se emite cuando el servidor rechaza el token y la app cierra la sesión sola. */
     val sessionExpired: SharedFlow<Unit> = authRepository.sessionExpired
 
     val cartCount: StateFlow<Int> = cartRepository.itemCount
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 
-    /** Cuántos favoritos tiene el usuario (los mismos que muestra la pestaña "Mis favs"). */
     val favoritesCount: StateFlow<Int> = favoritesRepository.favorites
         .map { it.size }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 
-    /** Productos con stock bajo; solo cuenta para administradores, el resto ve 0. */
     val lowStockCount: StateFlow<Int> = combine(
         catalogRepository.lowStockProducts,
         authRepository.currentUser

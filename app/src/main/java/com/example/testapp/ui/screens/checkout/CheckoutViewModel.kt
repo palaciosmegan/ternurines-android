@@ -57,7 +57,6 @@ class CheckoutViewModel @Inject constructor(
         private set
 
     init {
-        // Con API, si no hay dirección guardada en el teléfono, se trae la del servidor.
         viewModelScope.launch {
             val remote = shippingRepository.fetchRemote() ?: return@launch
             val current = uiState

@@ -10,7 +10,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 
-/** Convierte una fecha ISO como "2026-10-15T14:03:00Z" a milisegundos (0 si no se puede leer). */
 fun parseIsoMillis(value: String): Long = try {
     SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
         .apply { timeZone = TimeZone.getTimeZone("UTC") }

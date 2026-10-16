@@ -29,7 +29,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 
-/** Campo de solo lectura que abre un diálogo con la lista de opciones. */
 @Composable
 fun DropdownField(
     value: String,
@@ -64,7 +63,6 @@ fun DropdownField(
                 .fillMaxWidth()
                 .focusProperties { canFocus = false }
         )
-        // Capa transparente: todo el campo (no solo la flecha) abre la lista.
         Box(
             Modifier
                 .matchParentSize()
