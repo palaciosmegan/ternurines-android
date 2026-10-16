@@ -24,10 +24,6 @@ sealed interface AuthResult {
     data class Error(val message: String, val emailTaken: Boolean = false) : AuthResult
 }
 
-/**
- * Con `api.baseUrl` configurada habla con el API de AWS y guarda la sesión en el teléfono.
- * Sin URL, funciona en modo local con cuentas en memoria (demo).
- */
 @Singleton
 class AuthRepository @Inject constructor(
     private val api: TernurinesApi,

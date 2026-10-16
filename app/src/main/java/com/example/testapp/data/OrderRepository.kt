@@ -27,10 +27,6 @@ sealed interface OrderResult {
     data class Error(val message: String) : OrderResult
 }
 
-/**
- * Con API: el pedido se crea en el servidor (que calcula precios, descuenta stock y vacía su carrito).
- * Sin API: se guarda en memoria como antes.
- */
 @Singleton
 class OrderRepository @Inject constructor(
     private val catalogRepository: CatalogRepository,

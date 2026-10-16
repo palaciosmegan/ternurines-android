@@ -7,9 +7,6 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
-// URL base del API (API Gateway). Se define en local.properties (no se sube a git):
-//   api.baseUrl=https://xxxx.execute-api.us-east-1.amazonaws.com
-// Si no está definida, la app funciona en modo local (datos en memoria).
 val apiBaseUrl: String = Properties().let { props ->
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { props.load(it) }
     props.getProperty("api.baseUrl", "").trim()
